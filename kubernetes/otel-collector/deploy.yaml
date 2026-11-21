@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-demo-otelcol
+  namespace: otel-app
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: opentelemetry-demo-otelcol
+
+  template:
+    metadata:
+      labels:
+        app: opentelemetry-demo-otelcol
+
+    spec:
+      containers:
+      - name: otel-collector
+
+        image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.133.0
+
+        command:
+        - /otelcol-contrib
+
+        args:
+        - --config=/etc/otelcol-config.yml
+          --config=/etc/otelcol-config-extras.yml
+
+        ports:
+        - containerPort: 4317
+        - containerPort: 4318
+
+        env:
+        - name: DD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: otel-observability-secrets
+              key: DD_API_KEY
+
+        - name: DT_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: otel-observability-secrets
+              key: DT_API_TOKEN
+
+        - name: DD_SITE
+          value: "datadoghq.com"
+
+        - name: DT_ENDPOINT
+          value: "https://xqv51589.live.dynatrace.com/api/v2/otlp"
+
+        - name: OTEL_COLLECTOR_HOST
+          value: "0.0.0.0"
+
+        - name: OTEL_COLLECTOR_PORT_GRPC
+          value: "4317"
+
+        - name: OTEL_COLLECTOR_PORT_HTTP
+          value: "4318"
+
+        volumeMounts:
+        - name: collector-config
+          mountPath: /etc/otelcol-config.yml
+          subPath: otelcol-config.yml
+
+      volumes:
+      - name: collector-config
+        configMap:
+          name: opentelemetry-demo-otelcol-config

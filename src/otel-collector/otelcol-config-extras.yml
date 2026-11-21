@@ -1,0 +1,52 @@
+connectors:
+  datadog/connector:  
+exporters:
+  datadog:
+    api:
+      site: ${env:DD_SITE}
+      key: ${env:DD_API_KEY}
+
+  otlphttp/dynatrace:
+    endpoint: "https://xqv51589.live.dynatrace.com/api/v2/otlp"
+    headers:
+      Authorization: "Api-Token ${env:DT_API_TOKEN}"
+    tls:
+      insecure: false
+receivers:
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 30s
+    timeout: 15s
+
+processors:
+  resource:
+    attributes:
+      - key: deployment.environment.name
+        value: "otel"
+        action: upsert
+  batch: {}
+  cumulativetodelta: {}
+  resourcedetection:
+    detectors: [env, system, docker]
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+  transform: {}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resource, batch, resourcedetection, memory_limiter, transform]
+      exporters: [datadog, otlphttp/dynatrace, datadog/connector]
+
+    metrics:
+      receivers: [hostmetrics, otlp,  datadog/connector, docker_stats, httpcheck/frontend-proxy]
+      processors: [resource, batch, cumulativetodelta, resourcedetection, memory_limiter]
+      exporters: [datadog, otlphttp/dynatrace]
+
+    logs:
+      receivers: [otlp]
+      processors: [resource, batch, resourcedetection, memory_limiter]
+      exporters: [datadog, otlphttp/dynatrace]
+

@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opentelemetry-demo-otelcol-config
+  namespace: otel-app
+
+data:
+  otelcol-config.yml: |
+    # Copyright The OpenTelemetry Authors
+    # SPDX-License-Identifier: Apache-2.0
+    
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_GRPC}
+          http:
+            endpoint: ${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
+            cors:
+              allowed_origins:
+                - "http://*"
+                - "https://*"
+      httpcheck/frontend-proxy:
+        targets:
+          - endpoint: http://frontend-proxy:${env:ENVOY_PORT}
+      docker_stats:
+        endpoint: unix:///var/run/docker.sock
+        api_version: "1.44"
+      redis:
+        endpoint: "valkey-cart:6379"
+        username: "valkey"
+        collection_interval: 10s
+      # Host metrics
+      hostmetrics:
+        root_path: /hostfs
+        scrapers:
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          disk:
+          load:
+          filesystem:
+            exclude_mount_points:
+              mount_points:
+                - /dev/*
+                - /proc/*
+                - /sys/*
+                - /run/k3s/containerd/*
+                - /var/lib/docker/*
+                - /var/lib/kubelet/*
+                - /snap/*
+              match_type: regexp
+            exclude_fs_types:
+              fs_types:
+                - autofs
+                - binfmt_misc
+                - bpf
+                - cgroup2
+                - configfs
+                - debugfs
+                - devpts
+                - devtmpfs
+                - fusectl
+                - hugetlbfs
+                - iso9660
+                - mqueue
+                - nsfs
+                - overlay
+                - proc
+                - procfs
+                - pstore
+                - rpc_pipefs
+                - securityfs
+                - selinuxfs
+                - squashfs
+                - sysfs
+                - tracefs
+              match_type: strict
+          memory:
+            metrics:
+              system.memory.utilization:
+                enabled: true
+          network:
+          paging:
+          processes:
+          process:
+            mute_process_exe_error: true
+            mute_process_io_error: true
+            mute_process_user_error: true
+    
+    exporters:
+      debug:
+    
+      datadog:
+        api:
+          key: ${env:DD_API_KEY}
+          site: ${env:DD_SITE}
+    
+      otlphttp/dynatrace:
+        endpoint: ${env:DT_ENDPOINT}
+        headers:
+          Authorization: Api-Token ${env:DT_API_TOKEN}
+    
+    processors:
+      batch:
+    
+      transform:
+        error_mode: ignore
+        trace_statements:
+          - context: span
+            statements:
+              - replace_pattern(name, "\\?.*", "")
+              - replace_match(name, "GET /api/products/*", "GET /api/products/{productId}")
+    
+    connectors:
+      spanmetrics:
+    
+    service:
+      pipelines:
+    
+        traces:
+          receivers: [otlp]
+          processors: [transform, batch]
+          exporters: [datadog/connector, datadog, otlphttp/dynatrace, debug, spanmetrics]
+    
+        metrics:
+          receivers: [hostmetrics, datadog/connector, docker_stats, httpcheck/frontend-proxy, otlp, redis, spanmetrics]
+          processors: [batch]
+          exporters: [datadog, otlphttp/dynatrace, debug]
+    
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [datadog, otlphttp/dynatrace, debug]

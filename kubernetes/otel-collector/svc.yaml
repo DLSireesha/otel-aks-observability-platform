@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opentelemetry-demo-otelcol
+  namespace: otel-app
+
+spec:
+  selector:
+    app: opentelemetry-demo-otelcol
+
+  ports:
+    - name: grpc
+      port: 4317
+      targetPort: 4317
+
+    - name: http
+      port: 4318
+      targetPort: 4318
