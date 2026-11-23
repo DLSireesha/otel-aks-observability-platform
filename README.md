@@ -203,27 +203,25 @@ kubectl describe pod <pod-name> -n otel-app
 
 ---
 
-## 📸 Screenshots and Project Evidence
-
-Screenshots from the actual Azure deployment and monitoring environment will be included here.
+## 📸 Screenshots
 
 ### Resource Group
 
-![Resource Group]("docs/images/Resource%20Group.png")
+![Resource Group](docs/images/Resource%20Group.png)
 
 ### Kubernetes Workloads
 
-![AKS Running Pods]("docs/images/Pods_Status.png")
+![AKS Running Pods](docs/images/Pods_Status.png)
 
-![AKS Services]("docs/images/Services.png")
+![AKS Services](docs/images/Services.png)
 
 ### Dynatrace Monitoring
 
-![Dynatrace Services]("docs/images/Dynatrace%20Services.png")
+![Dynatrace Services](docs/images/Dynatrace%20Services.png)
 
 ### Datadog Monitoring
 
-![Datadog Logas]("docs/images/Dynatrace%20Logs.png")
+![Datadog Logas](docs/images/Dynatrace%20Logs.png)
 
 ---
 
