@@ -209,21 +209,21 @@ Screenshots from the actual Azure deployment and monitoring environment will be 
 
 ### Resource Group
 
-![Resource Group]("D:\Devops-Project\Resource Group.png")
+![Resource Group]("docs/images/Resource%20Group.png")
 
 ### Kubernetes Workloads
 
-![AKS Running Pods]("D:\Devops-Project\Pods_Status.png")
+![AKS Running Pods]("docs/images/Pods_Status.png")
 
-![AKS Services]("D:\Devops-Project\Services.png")
+![AKS Services]("docs/images/Services.png")
 
 ### Dynatrace Monitoring
 
-![Dynatrace Services]("D:\Devops-Project\Dynatrace Services.png")
+![Dynatrace Services]("docs/images/Dynatrace%20Services.png")
 
 ### Datadog Monitoring
 
-![Datadog Logas]("D:\Devops-Project\Dynatrace Logs.png")
+![Datadog Logas]("docs/images/Dynatrace%20Logs.png")
 
 ---
 
